@@ -1,6 +1,6 @@
 import numpy as np
 from skimage.morphology import disk, ball, binary_closing, closing, binary_dilation, dilation, binary_erosion
-from infer_subc.core.img import fill_and_filter_linear_size, get_interior_labels, get_max_label, inverse_log_transform, log_transform, masked_inverted_watershed, masked_object_thresh, select_channel_from_raw, threshold_otsu_log
+from infer_subc.core.img import fill_and_filter_linear_size, get_interior_labels, get_max_label, inverse_log_transform, log_transform, masked_inverted_watershed, masked_object_thresh, min_max_intensity_normalization, select_channel_from_raw, threshold_otsu_log
 from aicssegmentation.core.utils import hole_filling
 from infer_subc.organelles.nuclei import infer_nuclei_fromlabel
 from infer_subc.organelles.cellmask import non_linear_cellmask_transform
@@ -16,11 +16,6 @@ from infer_subc.constants import (
     PM_CH,
     RESIDUAL_CH,
 )
-
-def rescale_intensity(in_img: np.ndarray):
-    #rescales the intensity of input image on a scale of 0 to 10
-    out_img = ((in_img - in_img.min())/(in_img.max() - in_img.min()))*10
-    return out_img
 
 def membrane_composite(in_img: np.ndarray,
                        weight_ch0: int = 0,
@@ -52,7 +47,7 @@ def membrane_composite(in_img: np.ndarray,
         raw_img[PM_Channel] = np.max(in_img[PM_Channel])-in_img[PM_Channel]
     for ch, weight in enumerate(weights):
         if weight > 0:
-            out_img+=weight*rescale_intensity(raw_img[ch])
+            out_img+=weight*min_max_intensity_normalization(raw_img[ch])
     return out_img
 
 def masked_object_thresh_bind_pm(raw_img: np.ndarray,
@@ -263,7 +258,7 @@ def double_watershed(nuc: np.ndarray,
 def invert_pm_watershed(raw_img: np.ndarray, nuc_labels: np.ndarray, PM_Channel: int, Method: str):
     pm_img = select_channel_from_raw(raw_img, PM_Channel)
     invert_pm_img = abs(np.max(pm_img) - pm_img)
-    out_img = masked_inverted_watershed(img_in=rescale_intensity(invert_pm_img),
+    out_img = masked_inverted_watershed(img_in=min_max_intensity_normalization(invert_pm_img),
                                      markers=nuc_labels,
                                      mask=None,
                                      method=Method)

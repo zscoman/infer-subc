@@ -97,7 +97,7 @@
             "Thresh_Factor": 0.9,
             "Thresh_Min": 0.1,
             "Thresh_Max": 1.0,
-            "Min_Hole_Width": 0.0,
+            "Min_Hole_Width": 0,
             "Max_Hole_Width": 25,
             "Small_Obj_Width": 15,
             "Fill_Filter_Method": "3D",

@@ -123,23 +123,6 @@ def choose_max_label_cellmask_union_nucleus(cellmask_img: np.ndarray,
 
     return cellmask_out > 0
 
-def rescale_intensity(in_img: np.ndarray):
-    #rescales the intensity of input image on a scale of 0 to 10
-    out_img = ((in_img - in_img.min())/(in_img.max() - in_img.min()))*10
-    return out_img
-
-def create_composite(in_img: np.ndarray,
-                     weights: list[float],
-                     invert_PM: bool=False):
-    out_img = np.zeros_like(in_img[0]).astype(np.double)
-    for channel, weight in enumerate(weights):
-        if weight > 0:
-            if (channel == PM_CH)&(invert_PM):
-                out_img += weight * abs(np.max(in_img[PM_CH]) - in_img[PM_CH])
-            else:
-                out_img += weight * rescale_intensity(in_img[channel])
-    return out_img
-
 ##########################
 # infer_mask_from_membrane
 ##########################
